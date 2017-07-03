@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import scrapy
+import time
 from cwb.items import CwbItem
 
 class A136Spider(scrapy.Spider):
@@ -9,7 +10,11 @@ class A136Spider(scrapy.Spider):
 
     def parse(self, response):
         item = CwbItem()
-        for station in response.css('tr.Area3'):
+        download = response.css('table.description tr td::text').extract()[3]
+        dstr = download[7:]
+        #dtime = time.strptime(dstr,"%Y/%m/%d %H:%M:%S")
+        item['update_time'] = dstr#response.css('table.description tr td::text').re(["0-9+"]).extract()[3]
+        for station in response.css('tr.Area6'):
             item['name'] = station.css('td span::text').re("[\u4e00-\u9fa5]{1,}")[0]
             item['sid'] = station.css('td span::text').re("[A-Z0-9]{5,}")[0]
             item['t_10m'] = station.css('td font::text').extract()[0]
@@ -21,4 +26,5 @@ class A136Spider(scrapy.Spider):
             item['t_today'] = station.css('td font::text').extract()[6]
             item['t_yday'] = station.css('td font::text').extract()[7]
             item['t_2d'] = station.css('td font::text').extract()[8]
+            
             yield item
